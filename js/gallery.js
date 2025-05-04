@@ -65,45 +65,48 @@ const images = [
 ];
 
 const gallery = document.querySelector(".gallery");
+const fragment = document.createDocumentFragment();
 
-images.forEach(function (image) {
+images.forEach(({ preview, original, description }) => {
   const li = document.createElement("li");
   li.classList.add("gallery-item");
 
   const a = document.createElement("a");
   a.classList.add("gallery-link");
-  a.setAttribute("href", image.original);
+  a.href = original;
 
   const img = document.createElement("img");
   img.classList.add("gallery-image");
-  img.setAttribute("src", image.preview);
-  img.setAttribute("data-source", image.original);
-  img.setAttribute("alt", image.description);
+  img.src = preview;
+  img.dataset.source = original;
+  img.alt = description;
 
   a.appendChild(img);
   li.appendChild(a);
-  gallery.appendChild(li);
+  fragment.appendChild(li);
 });
+
+gallery.appendChild(fragment);
 
 gallery.addEventListener("click", (event) => {
   event.preventDefault();
 
-  if (event.target.tagName === "IMG") {
-    const largeImageURL = event.target.getAttribute("data-source");
+  const target = event.target;
+  if (target.tagName !== "IMG") return;
 
-    const instance = basicLightbox.create(`
-      <img src="${largeImageURL}" width="800" height="600">
-    `);
+  const largeImageURL = target.dataset.source;
 
-    const handleKeyDown = (event) => {
-      if (event.code === "Escape") {
-        instance.close();
-        document.removeEventListener("keydown", handleKeyDown);
-      }
-    };
+  const instance = basicLightbox.create(`
+    <img src="${largeImageURL}" width="800" height="600">
+  `);
 
-    document.addEventListener("keydown", handleKeyDown);
+  const handleKeyDown = (event) => {
+    if (event.code === "Escape") {
+      instance.close();
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  };
 
-    instance.show();
-  }
+  document.addEventListener("keydown", handleKeyDown);
+  instance.show();
 });
